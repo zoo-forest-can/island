@@ -664,6 +664,15 @@ function confirmName(){
   restartGame();
 }
 
+/* ━━━ FIREBASE ━━━ */
+const FB_URL='https://zoo-forest-7132c-default-rtdb.asia-southeast1.firebasedatabase.app';
+function postToFirebase(path,data){
+  fetch(`${FB_URL}/${path}.json`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  }).catch(()=>{});
+}
+
 function getLB(){
   try{
     const data=JSON.parse(localStorage.getItem('platform_amhz_lb')||'[]');
@@ -679,6 +688,8 @@ function saveScore(s){
   localStorage.setItem('platform_amhz_lb',JSON.stringify(lb));
   // 同步回舊 key（相容性）
   localStorage.setItem('amhz_lb',JSON.stringify(lb));
+  // 上傳到 Firebase 雲端排行榜
+  postToFirebase('lb_amhz',{name,score:s,date:d});
 }
 function getMyRank(s){const i=getLB().findIndex(e=>e.s===s);return i<0?999:i+1;}
 function updateLB(){
