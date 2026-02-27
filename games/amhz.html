@@ -660,6 +660,11 @@ function confirmName(){
   playerName = name;
   localStorage.setItem('platform_player_name', name);
   document.getElementById('nameOverlay').classList.remove('show');
+  // 封面若還在（首次進入尚未按「開始遊戲」），觸發淡出
+  const cover = document.getElementById('cover-screen');
+  if(cover && cover.style.display !== 'none'){
+    startGame();
+  }
   // 重新初始化遊戲（清除背景已跑的狀態）
   restartGame();
 }
