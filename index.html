@@ -27,10 +27,20 @@
     .banner-fallback{width:100%;height:100%;background:linear-gradient(135deg,#0d1b3e 0%,#0a2a1a 25%,#1a3a0a 45%,#2d4a10 60%,#3d5a1a 75%,#1a2d40 100%);display:flex;align-items:center;justify-content:center;}
     .banner::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,12,26,0) 0%,rgba(8,12,26,0.15) 60%,rgba(8,12,26,0.85) 100%);pointer-events:none;}
     .banner-text{position:absolute;bottom:32px;left:48px;z-index:2;}
-    .banner-title{font-size:clamp(36px,6vw,72px);font-weight:900;letter-spacing:10px;
+    .banner-title{font-size:clamp(28px,4vw,52px);font-weight:900;letter-spacing:10px;
       background:linear-gradient(150deg,#FFD166 0%,#FF8C2A 45%,#FF5500 100%);
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:8px;}
-    .banner-sub{font-size:13px;color:rgba(255,255,255,0.65);letter-spacing:5px;font-weight:500;}
+    .banner-sub{font-size:13px;color:rgba(255,255,255,0.65);letter-spacing:4px;font-weight:500;}
+    /* TAB BAR */
+    .tab-bar{position:relative;z-index:10;display:flex;justify-content:center;gap:0;
+      background:var(--surface);border-bottom:1px solid var(--border);}
+    .tab-btn{background:none;border:none;color:var(--muted);font-family:inherit;font-size:14px;font-weight:700;
+      letter-spacing:2px;padding:16px 48px;cursor:pointer;position:relative;transition:color .2s;outline:none;}
+    .tab-btn::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+      width:0;height:3px;background:var(--orange);border-radius:2px 2px 0 0;transition:width .25s;}
+    .tab-btn.active{color:var(--text);}
+    .tab-btn.active::after{width:60%;}
+    .tab-btn:hover{color:var(--text);}
     /* SHARED */
     .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:64px 24px;}
     .sep{height:1px;background:var(--border);max-width:1080px;margin:0 auto;}
@@ -71,8 +81,8 @@
 <nav>
   <div class="nav-brand">路否羅</div>
   <ul class="nav-links">
-    <li><a href="#games">遊戲大廳</a></li>
-    <li><a href="#lb">排行榜</a></li>
+    <li><a href="#" onclick="switchTab('games');return false;">遊戲大廳</a></li>
+    <li><a href="#" onclick="switchTab('lb');return false;">排行榜</a></li>
   </ul>
 </nav>
 
@@ -87,10 +97,17 @@
   </div>
   <div class="banner-text">
     <div class="banner-title">路否羅</div>
-    <div class="banner-sub">ZOO FOREST ADVENTURE · 十二生肖決戰</div>
+    <div class="banner-sub">自由體驗，創造歡樂</div>
   </div>
 </div>
 
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-games" onclick="switchTab('games')">🎮 遊戲大廳</button>
+  <button class="tab-btn" id="tab-lb" onclick="switchTab('lb')">🏆 排行榜</button>
+</div>
+
+<section id="section-games">
 <section id="games" class="wrap">
   <h2 class="sec-title">遊戲 <em>大廳</em></h2>
   <div class="game-grid">
@@ -112,9 +129,9 @@
     </a>
   </div>
 </section>
+</section><!-- /section-games -->
 
-<div class="sep"></div>
-
+<section id="section-lb" style="display:none">
 <section id="lb" class="wrap">
   <h2 class="sec-title">🏆 高手 <em>排行榜</em></h2>
   <div class="lb-grid">
@@ -137,6 +154,7 @@
   </div>
   <p class="lb-note">📅 排行榜每月 1 日自動重置</p>
 </section>
+</section><!-- /section-lb -->
 
 <footer>© 2026 路否羅 · 快樂遊玩，永遠第一！</footer>
 
@@ -194,6 +212,15 @@ async function loadAll(){
   const[amhz,bb]=await Promise.all([fetchFirebaseLb('lb_amhz'),fetchFirebaseLb('lb_bb')]);
   renderLb(amhz,'leaderboard-amhz-body','leaderboard-amhz-empty');
   renderLb(bb,'leaderboard-bb-body','leaderboard-bb-empty');
+}
+
+function switchTab(tab){
+  const isGames = tab==='games';
+  document.getElementById('section-games').style.display = isGames?'':'none';
+  document.getElementById('section-lb').style.display   = isGames?'none':'';
+  document.getElementById('tab-games').classList.toggle('active', isGames);
+  document.getElementById('tab-lb').classList.toggle('active', !isGames);
+  if(!isGames) loadAll();
 }
 
 document.addEventListener('DOMContentLoaded',async function(){

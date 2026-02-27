@@ -100,11 +100,11 @@ const PITCHES=[
 ];
 
 /* ━━━ GAME STATE ━━━ */
-let VIEW=localStorage.getItem('platform_player_name')?'title':'nameInput'; // title | select | game | nameInput | result
+let VIEW='nameInput'; // 每次進入都詢問名稱 | title | select | game | nameInput | result
 let selIdx=-1, CUR=null;
 let score=0, hiScore=parseInt(localStorage.getItem('bb_hi')||0);
 let playerName = localStorage.getItem('platform_player_name') || '';
-let nameInputText = '';
+let nameInputText = localStorage.getItem('platform_player_name')||'';
 let nameInputActive = false;
 let pitchNo=0, totalPitches=10;
 let hits=0, homers=0, strikes_out=0;

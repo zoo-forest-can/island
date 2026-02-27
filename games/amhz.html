@@ -545,7 +545,7 @@ function checkGameOver(){
   for(const an of animals){
     if(now-an.born<1600)continue;
     const top=an.body.position.y-ANIMALS[an.level].r;
-    if(top<DANGER_Y){const sp=Math.abs(an.body.velocity.x)+Math.abs(an.body.velocity.y); if(sp<0.6){danger=true;break;}}
+    if(top<DANGER_Y){danger=true;break;} // 只要超過紅線且存活超過1.6s即計危險
   }
   dangerTick=danger?dangerTick+1:0;
   if(dangerTick>55)triggerGameOver();
@@ -778,7 +778,11 @@ function activateHorse(){
   _horseTimer = setTimeout(() => closeHorseVideo(), 30000);
 
   video.load(); // 重新載入確保 source 生效
-  video.play().catch(() => { clearHorseTimer(); closeHorseVideo(); });
+  video.play().catch(() => {
+    // autoplay blocked → 嘗試靜音播放
+    video.muted = true;
+    video.play().catch(() => { clearHorseTimer(); closeHorseVideo(); });
+  });
 }
 
 function clearHorseTimer(){
@@ -980,12 +984,13 @@ function toggleMute(){
 // 初始化
 buildEvoList(); init(); refreshUI(); loop();
 
-// 如果已有玩家名稱，隱藏名稱輸入覆蓋層
+// 每次進入都顯示名稱輸入框，若已有名稱則預填
 const existingName = localStorage.getItem('platform_player_name');
 if(existingName){
   playerName = existingName;
-  document.getElementById('nameOverlay').classList.remove('show');
+  document.getElementById('playerNameInput').value = existingName;
 }
+// nameOverlay 保持 show，讓玩家確認或修改名稱
 
 </script>
 </div>
