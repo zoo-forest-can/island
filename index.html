@@ -7,162 +7,67 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:      #080c1a;
-      --surface: #0f1528;
-      --card:    #141b2e;
-      --border:  rgba(255,255,255,0.07);
-      --orange:  #FF8C2A;
-      --text:    #eef1f8;
-      --muted:   #6a7a9a;
+      --bg:#080c1a; --surface:#0f1528; --card:#141b2e;
+      --border:rgba(255,255,255,0.07); --orange:#FF8C2A;
+      --text:#eef1f8; --muted:#6a7a9a;
     }
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Noto Sans TC', sans-serif;
-      overflow-x: hidden;
-      min-height: 100vh;
-    }
-
-    /* atmospheric glow */
-    body::before {
-      content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-      background:
-        radial-gradient(ellipse 70% 55% at 10% 85%, rgba(74,143,255,0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 55% 40% at 90% 10%, rgba(255,140,42,0.06) 0%, transparent 60%);
-    }
-
-    /* ── NAV ── */
-    nav {
-      position:sticky; top:0; z-index:200;
-      height:60px;
-      background:rgba(8,12,26,0.90);
-      backdrop-filter:blur(16px);
-      border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 36px;
-    }
-    .nav-brand { font-size:20px; font-weight:900; letter-spacing:4px; color:var(--orange); }
-    .nav-links { display:flex; gap:28px; list-style:none; }
-    .nav-links a {
-      color:var(--muted); text-decoration:none;
-      font-size:13px; font-weight:700; letter-spacing:1px;
-      transition:color .2s;
-    }
-    .nav-links a:hover { color:var(--text); }
-
-    /* ── HERO ── */
-    .hero {
-      position:relative; z-index:1;
-      text-align:center; padding:90px 24px 72px;
-    }
-    .hero-title {
-      font-size:clamp(52px,10vw,96px); font-weight:900; letter-spacing:14px;
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;overflow-x:hidden;min-height:100vh;}
+    nav{position:sticky;top:0;z-index:200;height:60px;background:rgba(8,12,26,0.92);
+      backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;padding:0 36px;}
+    .nav-brand{font-size:20px;font-weight:900;letter-spacing:4px;color:var(--orange);}
+    .nav-links{display:flex;gap:28px;list-style:none;}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700;letter-spacing:1px;transition:color .2s;}
+    .nav-links a:hover{color:var(--text);}
+    /* BANNER */
+    .banner{position:relative;width:100%;overflow:hidden;height:clamp(220px,40vw,480px);}
+    .banner-img{width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;}
+    .banner-fallback{width:100%;height:100%;background:linear-gradient(135deg,#0d1b3e 0%,#0a2a1a 25%,#1a3a0a 45%,#2d4a10 60%,#3d5a1a 75%,#1a2d40 100%);display:flex;align-items:center;justify-content:center;}
+    .banner::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,12,26,0) 0%,rgba(8,12,26,0.15) 60%,rgba(8,12,26,0.85) 100%);pointer-events:none;}
+    .banner-text{position:absolute;bottom:32px;left:48px;z-index:2;}
+    .banner-title{font-size:clamp(36px,6vw,72px);font-weight:900;letter-spacing:10px;
       background:linear-gradient(150deg,#FFD166 0%,#FF8C2A 45%,#FF5500 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-      line-height:1.1; margin-bottom:20px;
-    }
-    .hero-sub {
-      font-size:14px; color:var(--muted); letter-spacing:5px; font-weight:500;
-    }
-
-    /* ── SHARED ── */
-    .wrap {
-      position:relative; z-index:1;
-      max-width:1080px; margin:0 auto; padding:64px 24px;
-    }
-    .sep { height:1px; background:var(--border); max-width:1080px; margin:0 auto; }
-    .sec-title {
-      text-align:center; font-size:22px; font-weight:900;
-      letter-spacing:5px; margin-bottom:40px;
-    }
-    .sec-title em { color:var(--orange); font-style:normal; }
-
-    /* ── GAMES ── */
-    .game-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
-    .game-card {
-      background:var(--card);
-      border-radius:20px; overflow:hidden;
-      border:1px solid var(--border);
-      text-decoration:none; display:block;
-      transition: transform .3s cubic-bezier(.34,1.56,.64,1),
-                  box-shadow .3s ease;
-    }
-    .game-card:hover {
-      transform:translateY(-10px) scale(1.02);
-      box-shadow:0 28px 52px rgba(0,0,0,.7);
-    }
-    .game-cover { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
-    .game-body { padding:22px 24px 26px; }
-    .game-name { font-size:20px; font-weight:900; letter-spacing:1px; margin-bottom:8px; }
-    .game-desc { font-size:13px; color:var(--muted); line-height:1.75; margin-bottom:18px; }
-    .btn-go {
-      display:inline-block; background:var(--orange);
-      color:#000; font-weight:900; font-size:13px; letter-spacing:2px;
-      padding:10px 28px; border-radius:100px; font-family:inherit;
-      transition:opacity .2s, transform .15s;
-    }
-    .btn-go:hover { opacity:.88; transform:scale(1.05); }
-
-    /* ── LEADERBOARD ── */
-    .lb-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
-    .lb-panel {
-      background:var(--card); border:1px solid var(--border);
-      border-radius:20px; padding:28px 24px;
-    }
-    .lb-panel-title {
-      font-size:15px; font-weight:900; letter-spacing:1px;
-      margin-bottom:20px; display:flex; align-items:center; gap:8px;
-    }
-    table { width:100%; border-collapse:collapse; }
-    th {
-      font-size:11px; color:var(--muted); font-weight:700;
-      padding:6px 10px; border-bottom:1px solid var(--border);
-      letter-spacing:1.5px; text-align:left;
-    }
-    td {
-      padding:11px 10px; font-size:13px;
-      border-bottom:1px solid rgba(255,255,255,0.04);
-    }
-    .td-rank { color:var(--muted); font-weight:700; width:36px; }
-    .td-name { color:var(--text); }
-    .td-score { color:var(--orange); font-weight:900; text-align:right; }
-    .td-date  { color:var(--muted); font-size:11px; text-align:right; }
-    .lb-empty { text-align:center; color:var(--muted); padding:36px 0; font-size:13px; }
-    .lb-actions { text-align:center; margin-top:40px; }
-    .btn-reset {
-      background:transparent; border:1px solid var(--border);
-      color:var(--muted); font-size:13px; padding:9px 28px;
-      border-radius:100px; cursor:pointer; font-family:inherit;
-      transition:border-color .2s, color .2s;
-    }
-    .btn-reset:hover { border-color:rgba(255,255,255,.28); color:var(--text); }
-
-    /* ── FOOTER ── */
-    footer {
-      position:relative; z-index:1;
-      text-align:center; padding:44px 24px;
-      color:var(--muted); font-size:13px;
-      border-top:1px solid var(--border);
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width:860px) {
-      .game-grid { grid-template-columns:1fr; max-width:480px; margin:0 auto; }
-    }
-    @media (max-width:560px) {
-      .game-grid, .lb-grid { grid-template-columns:1fr; }
-      nav { padding:0 20px; }
-      .nav-links { display:none; }
-      .hero { padding:60px 20px 52px; }
-    }
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:8px;}
+    .banner-sub{font-size:13px;color:rgba(255,255,255,0.65);letter-spacing:5px;font-weight:500;}
+    /* SHARED */
+    .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:64px 24px;}
+    .sep{height:1px;background:var(--border);max-width:1080px;margin:0 auto;}
+    .sec-title{text-align:center;font-size:22px;font-weight:900;letter-spacing:5px;margin-bottom:40px;}
+    .sec-title em{color:var(--orange);font-style:normal;}
+    /* GAMES */
+    .game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+    .game-card{background:var(--card);border-radius:20px;overflow:hidden;border:1px solid var(--border);
+      text-decoration:none;display:block;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease;}
+    .game-card:hover{transform:translateY(-10px) scale(1.02);box-shadow:0 28px 52px rgba(0,0,0,.7);}
+    .game-cover{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+    .game-body{padding:22px 24px 26px;}
+    .game-name{font-size:20px;font-weight:900;letter-spacing:1px;margin-bottom:8px;}
+    .game-desc{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:18px;}
+    .btn-go{display:inline-block;background:var(--orange);color:#000;font-weight:900;font-size:13px;
+      letter-spacing:2px;padding:10px 28px;border-radius:100px;font-family:inherit;transition:opacity .2s,transform .15s;}
+    .btn-go:hover{opacity:.88;transform:scale(1.05);}
+    /* LEADERBOARD */
+    .lb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+    .lb-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;}
+    .lb-panel-title{font-size:15px;font-weight:900;letter-spacing:1px;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-size:11px;color:var(--muted);font-weight:700;padding:6px 10px;border-bottom:1px solid var(--border);letter-spacing:1.5px;text-align:left;}
+    td{padding:11px 10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);}
+    .td-rank{color:var(--muted);font-weight:700;width:36px;}
+    .td-name{color:var(--text);}
+    .td-score{color:var(--orange);font-weight:900;text-align:right;}
+    .td-date{color:var(--muted);font-size:11px;text-align:right;}
+    .lb-empty{text-align:center;color:var(--muted);padding:36px 0;font-size:13px;}
+    .lb-note{text-align:center;margin-top:20px;color:var(--muted);font-size:12px;letter-spacing:1px;}
+    footer{position:relative;z-index:1;text-align:center;padding:44px 24px;color:var(--muted);font-size:13px;border-top:1px solid var(--border);}
+    @media(max-width:860px){.banner-text{left:24px;bottom:24px;}}
+    @media(max-width:560px){.game-grid,.lb-grid{grid-template-columns:1fr;}nav{padding:0 20px;}.nav-links{display:none;}.banner{height:200px;}}
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-brand">路否羅</div>
   <ul class="nav-links">
@@ -171,149 +76,131 @@
   </ul>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
-  <h1 class="hero-title">路否羅</h1>
-  <p class="hero-sub">挑戰最高分 · 登上排行榜 · 十二生肖決戰</p>
+<div class="banner">
+  <img src="images/banner.jpg" alt="路否羅" class="banner-img"
+       onerror="this.style.display='none';document.querySelector('.banner-fallback').style.display='flex'">
+  <div class="banner-fallback" style="display:none">
+    <div style="text-align:center;padding:0 24px;">
+      <div style="font-size:64px;font-weight:900;letter-spacing:14px;background:linear-gradient(150deg,#FFD166,#FF8C2A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">路否羅</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:6px;margin-top:8px;">ZOO FOREST ADVENTURE</div>
+    </div>
+  </div>
+  <div class="banner-text">
+    <div class="banner-title">路否羅</div>
+    <div class="banner-sub">ZOO FOREST ADVENTURE · 十二生肖決戰</div>
+  </div>
 </div>
 
-<!-- GAMES -->
 <section id="games" class="wrap">
   <h2 class="sec-title">遊戲 <em>大廳</em></h2>
   <div class="game-grid">
-
     <a href="games/amhz.html" class="game-card">
-      <img src="images/mix.png" alt="動物合盒樂" class="game-cover">
+      <img src="images/mix.jpg" alt="動物合盒樂" class="game-cover">
       <div class="game-body">
         <div class="game-name">動物合盒樂</div>
         <div class="game-desc">疊疊合體的生肖小遊戲！把動物往下丟，讓相同生肖合體進化，堆越高分數越高～</div>
         <span class="btn-go">立刻挑戰 ▶</span>
       </div>
     </a>
-
     <a href="games/bb.html" class="game-card">
-      <img src="images/homerun.png" alt="動物轟不讓" class="game-cover">
+      <img src="images/homerun.jpg" alt="動物轟不讓" class="game-cover">
       <div class="game-body">
         <div class="game-name">動物轟不讓</div>
         <div class="game-desc">生肖棒球全壘打挑戰！選你的生肖選手，猛打全壘打，5回合決一勝負！</div>
         <span class="btn-go">立刻挑戰 ▶</span>
       </div>
     </a>
-
   </div>
 </section>
 
 <div class="sep"></div>
 
-<!-- LEADERBOARD -->
 <section id="lb" class="wrap">
   <h2 class="sec-title">🏆 高手 <em>排行榜</em></h2>
   <div class="lb-grid">
-
     <div class="lb-panel">
       <div class="lb-panel-title">🎯 動物合盒樂</div>
       <table>
-        <thead><tr>
-          <th>名次</th><th>玩家</th>
-          <th style="text-align:right">分數</th>
-          <th style="text-align:right">日期</th>
-        </tr></thead>
+        <thead><tr><th>名次</th><th>玩家</th><th style="text-align:right">分數</th><th style="text-align:right">日期</th></tr></thead>
         <tbody id="leaderboard-amhz-body"></tbody>
       </table>
       <div id="leaderboard-amhz-empty" class="lb-empty" style="display:none">還沒有高手記錄，快去挑戰吧！🎮</div>
     </div>
-
     <div class="lb-panel">
       <div class="lb-panel-title">⚾ 動物轟不讓</div>
       <table>
-        <thead><tr>
-          <th>名次</th><th>玩家</th>
-          <th style="text-align:right">分數</th>
-          <th style="text-align:right">日期</th>
-        </tr></thead>
+        <thead><tr><th>名次</th><th>玩家</th><th style="text-align:right">分數</th><th style="text-align:right">日期</th></tr></thead>
         <tbody id="leaderboard-bb-body"></tbody>
       </table>
       <div id="leaderboard-bb-empty" class="lb-empty" style="display:none">還沒有高手記錄，快去挑戰吧！🎮</div>
     </div>
-
   </div>
-  <div class="lb-actions">
-    <button class="btn-reset" onclick="resetLeaderboards()">重置排行榜</button>
-  </div>
+  <p class="lb-note">📅 排行榜每月 1 日自動重置</p>
 </section>
 
 <footer>© 2026 路否羅 · 快樂遊玩，永遠第一！</footer>
 
 <script>
-  const FB_URL = 'https://zoo-forest-7132c-default-rtdb.asia-southeast1.firebasedatabase.app';
-  const MEDALS = ['🥇','🥈','🥉'];
+const FB_URL='https://zoo-forest-7132c-default-rtdb.asia-southeast1.firebasedatabase.app';
+const MEDALS=['🥇','🥈','🥉'];
 
-  function fmtDate(d) {
-    if (!d) return '—';
-    const dt = new Date(d);
-    if (isNaN(dt.getTime())) return d;
-    return String(dt.getMonth()+1).padStart(2,'0') + '/' +
-           String(dt.getDate()).padStart(2,'0');
-  }
-
-  async function fetchFirebaseLb(path) {
-    try {
-      const res  = await fetch(`${FB_URL}/${path}.json`);
-      const data = await res.json();
-      if (!data) return [];
-      return Object.values(data)
-        .filter(e => e && e.score != null)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 10);
-    } catch {
-      const key = path === 'lb_amhz' ? 'platform_amhz_lb' : 'platform_bb_lb';
-      try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
-    }
-  }
-
-  function renderLb(data, tbodyId, emptyId) {
-    const tbody = document.getElementById(tbodyId);
-    const empty = document.getElementById(emptyId);
-    if (!data.length) {
-      tbody.innerHTML = '';
-      if (empty) empty.style.display = '';
-      return;
-    }
-    if (empty) empty.style.display = 'none';
-    tbody.innerHTML = data.map((e, i) => {
-      const medal = MEDALS[i] || (i+1)+'.';
-      return `<tr>
-        <td class="td-rank">${medal}</td>
-        <td class="td-name">${e.name || '匿名玩家'}</td>
-        <td class="td-score">${e.score ?? e.s ?? '—'}</td>
-        <td class="td-date">${fmtDate(e.date || e.d)}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  async function loadAll() {
-    const [amhz, bb] = await Promise.all([
-      fetchFirebaseLb('lb_amhz'), fetchFirebaseLb('lb_bb')
-    ]);
-    renderLb(amhz, 'leaderboard-amhz-body', 'leaderboard-amhz-empty');
-    renderLb(bb,   'leaderboard-bb-body',   'leaderboard-bb-empty');
-  }
-
-  async function resetLeaderboards() {
-    if (!confirm('確定要重置所有排行榜紀錄？（包含雲端資料）')) return;
+async function checkMonthlyReset(){
+  const now=new Date();
+  const key='lb_last_reset';
+  const lastReset=localStorage.getItem(key);
+  const thisMonth=`${now.getFullYear()}-${now.getMonth()+1}`;
+  if(lastReset!==thisMonth && now.getDate()===1){
     await Promise.all([
-      fetch(`${FB_URL}/lb_amhz.json`, { method: 'DELETE' }).catch(()=>{}),
-      fetch(`${FB_URL}/lb_bb.json`,   { method: 'DELETE' }).catch(()=>{}),
+      fetch(`${FB_URL}/lb_amhz.json`,{method:'DELETE'}).catch(()=>{}),
+      fetch(`${FB_URL}/lb_bb.json`,{method:'DELETE'}).catch(()=>{}),
     ]);
     localStorage.removeItem('platform_amhz_lb');
     localStorage.removeItem('platform_bb_lb');
-    loadAll();
+    localStorage.setItem(key,thisMonth);
   }
+}
 
-  document.addEventListener('DOMContentLoaded', function() {
-    loadAll();
-    setInterval(loadAll, 10000);
-  });
+function fmtDate(d){
+  if(!d)return'—';
+  const dt=new Date(d);
+  if(isNaN(dt.getTime()))return d;
+  return String(dt.getMonth()+1).padStart(2,'0')+'/'+String(dt.getDate()).padStart(2,'0');
+}
+
+async function fetchFirebaseLb(path){
+  try{
+    const res=await fetch(`${FB_URL}/${path}.json`);
+    const data=await res.json();
+    if(!data)return[];
+    return Object.values(data).filter(e=>e&&e.score!=null).sort((a,b)=>b.score-a.score).slice(0,10);
+  }catch{
+    const key=path==='lb_amhz'?'platform_amhz_lb':'platform_bb_lb';
+    try{return JSON.parse(localStorage.getItem(key)||'[]');}catch{return[];}
+  }
+}
+
+function renderLb(data,tbodyId,emptyId){
+  const tbody=document.getElementById(tbodyId);
+  const empty=document.getElementById(emptyId);
+  if(!data.length){tbody.innerHTML='';if(empty)empty.style.display='';return;}
+  if(empty)empty.style.display='none';
+  tbody.innerHTML=data.map((e,i)=>{
+    const medal=MEDALS[i]||(i+1)+'.';
+    return`<tr><td class="td-rank">${medal}</td><td class="td-name">${e.name||'匿名玩家'}</td><td class="td-score">${e.score??e.s??'—'}</td><td class="td-date">${fmtDate(e.date||e.d)}</td></tr>`;
+  }).join('');
+}
+
+async function loadAll(){
+  const[amhz,bb]=await Promise.all([fetchFirebaseLb('lb_amhz'),fetchFirebaseLb('lb_bb')]);
+  renderLb(amhz,'leaderboard-amhz-body','leaderboard-amhz-empty');
+  renderLb(bb,'leaderboard-bb-body','leaderboard-bb-empty');
+}
+
+document.addEventListener('DOMContentLoaded',async function(){
+  await checkMonthlyReset();
+  loadAll();
+  setInterval(loadAll,10000);
+});
 </script>
 </body>
 </html>

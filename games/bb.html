@@ -100,7 +100,7 @@ const PITCHES=[
 ];
 
 /* ━━━ GAME STATE ━━━ */
-let VIEW='title'; // title | select | game | result
+let VIEW=localStorage.getItem('platform_player_name')?'title':'nameInput'; // title | select | game | nameInput | result
 let selIdx=-1, CUR=null;
 let score=0, hiScore=parseInt(localStorage.getItem('bb_hi')||0);
 let playerName = localStorage.getItem('platform_player_name') || '';
