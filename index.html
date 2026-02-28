@@ -14,13 +14,24 @@
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     html{scroll-behavior:smooth;}
     body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;overflow-x:hidden;min-height:100vh;}
-    nav{position:sticky;top:0;z-index:200;height:60px;background:rgba(8,12,26,0.92);
-      backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
-      display:flex;align-items:center;justify-content:space-between;padding:0 36px;}
-    .nav-brand{font-size:20px;font-weight:900;letter-spacing:4px;color:var(--orange);}
-    .nav-links{display:flex;gap:28px;list-style:none;}
-    .nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700;letter-spacing:1px;transition:color .2s;}
-    .nav-links a:hover{color:var(--text);}
+    /* FLOATING NAV */
+    #nav-toggle{position:fixed;left:16px;top:50%;transform:translateY(-50%);z-index:300;
+      width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;
+      background:var(--orange);color:#000;font-size:22px;font-weight:900;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 24px rgba(255,140,42,0.5);transition:background .2s,transform .2s;}
+    #nav-toggle:hover{background:#ffa040;transform:translateY(-50%) scale(1.1);}
+    #nav-panel{position:fixed;left:0;top:0;height:100vh;width:200px;z-index:299;
+      background:rgba(8,12,26,0.97);backdrop-filter:blur(20px);
+      border-right:1px solid var(--border);padding:80px 24px 32px;
+      transform:translateX(-200px);transition:transform .3s ease;
+      display:flex;flex-direction:column;gap:4px;}
+    #nav-panel.open{transform:translateX(0);}
+    .panel-brand{font-size:20px;font-weight:900;letter-spacing:4px;color:var(--orange);margin-bottom:20px;}
+    .panel-links{list-style:none;display:flex;flex-direction:column;gap:4px;}
+    .panel-links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700;
+      letter-spacing:1px;transition:color .2s;padding:10px 0;display:block;}
+    .panel-links a:hover{color:var(--text);}
     /* BANNER */
     .banner{position:relative;width:100%;overflow:hidden;height:clamp(220px,40vw,480px);}
     .banner-img{width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;}
@@ -95,19 +106,22 @@
       color:#000;font-weight:900;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:2px;}
     footer{position:relative;z-index:1;text-align:center;padding:44px 24px;color:var(--muted);font-size:13px;border-top:1px solid var(--border);}
     @media(max-width:860px){.banner-text{left:24px;bottom:24px;}}
-    @media(max-width:560px){.game-grid,.lb-grid{grid-template-columns:1fr;}nav{padding:0 20px;}.nav-links{display:none;}.banner{height:200px;}}
+    @media(max-width:560px){.game-grid,.lb-grid{grid-template-columns:1fr;}.banner{height:200px;}}
   </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-brand">路否羅</div>
-  <div id="nav-player" style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;letter-spacing:1px;display:none;">👤 <span id="nav-player-name"></span></div>
-  <ul class="nav-links">
-    <li><a href="#" onclick="switchTab('games');return false;">遊戲大廳</a></li>
-    <li><a href="#" onclick="switchTab('lb');return false;">排行榜</a></li>
+<!-- Floating Nav Toggle -->
+<button id="nav-toggle" onclick="toggleNav()" aria-label="選單">☰</button>
+<!-- Floating Nav Panel -->
+<div id="nav-panel">
+  <div class="panel-brand">路否羅</div>
+  <div id="nav-player" style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;letter-spacing:1px;display:none;margin-bottom:12px;">👤 <span id="nav-player-name"></span></div>
+  <ul class="panel-links">
+    <li><a href="#" onclick="switchTab('games');toggleNav(false);return false;">遊戲大廳</a></li>
+    <li><a href="#" onclick="switchTab('lb');toggleNav(false);return false;">排行榜</a></li>
   </ul>
-</nav>
+</div>
 
 <div class="banner">
   <img src="images/banner.jpg" alt="路否羅" class="banner-img"
@@ -195,6 +209,24 @@
 
 <script>
 const FB_URL='https://zoo-forest-7132c-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+/* ── 懸浮導覽列 Toggle ── */
+function toggleNav(forceState){
+  const panel=document.getElementById('nav-panel');
+  const btn=document.getElementById('nav-toggle');
+  const isOpen=typeof forceState==='boolean'?forceState:!panel.classList.contains('open');
+  panel.classList.toggle('open',isOpen);
+  btn.textContent=isOpen?'✕':'☰';
+  localStorage.setItem('nav_panel_open',isOpen?'1':'0');
+}
+// 點擊面板外部自動收折
+document.addEventListener('click',function(e){
+  const panel=document.getElementById('nav-panel');
+  const btn=document.getElementById('nav-toggle');
+  if(panel&&panel.classList.contains('open')&&!panel.contains(e.target)&&e.target!==btn){
+    toggleNav(false);
+  }
+});
 
 /* ── 遊戲設定（新增遊戲只需加此陣列，其餘自動支援） ── */
 const GAMES_CONFIG = {
@@ -335,6 +367,8 @@ document.addEventListener('DOMContentLoaded',async function(){
   loadPlayCount();
   loadAll();
   setInterval(loadAll,10000);
+  // 還原 nav panel 上次狀態
+  if(localStorage.getItem('nav_panel_open')==='1') toggleNav(true);
 });
 </script>
 <!-- Rules Modal -->
