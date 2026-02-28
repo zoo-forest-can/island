@@ -437,10 +437,10 @@ body {
       <button class="btn-again" onclick="restartGame()">🔄 再玩一次</button>
       <button class="btn-share" onclick="shareResult()">📤 分享成績</button>
     </div>
-  </div>
-  <!-- 手機版 canvas-wrap 浮動按鈕 (absolute，不受 flex 佈局影響) -->
+  <!-- 手機版 canvas-wrap 浮動按鈕 (absolute，錨定於 canvas-wrap position:relative) -->
   <button id="evo-modal-btn" onclick="openEvoModal()" title="生肖進化錄">🔯</button>
   <button id="horse-mobile-btn" onclick="activateHorse()" title="天降神蹟">⚡ 天降神蹟</button>
+  </div>
   </div>
   <div class="right-col">
     <div class="panel">
