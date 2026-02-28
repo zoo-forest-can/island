@@ -46,7 +46,7 @@ body {
 .evo-name { font-size:13px; color:rgba(255,255,255,0.92); font-weight:700; margin-top:4px; }
 .evo-pts  { font-size:11px; color:rgba(255,215,0,0.85); margin-top:1px; }
 .canvas-wrap { position:relative; flex:1; display:flex; justify-content:center; align-items:flex-start; }
-#gameCanvas { display:block; border-radius:6px; cursor:crosshair; box-shadow:0 0 25px rgba(60,100,200,0.12); }
+#gameCanvas { display:block; border-radius:6px; cursor:crosshair; box-shadow:0 0 25px rgba(60,100,200,0.12); touch-action:none; }
 .mobile-hud {
   display:none; position:absolute; top:8px; left:0; right:0;
   pointer-events:none; z-index:10; padding:0 10px;
@@ -95,6 +95,8 @@ body {
 .lb-empty { font-size:13px; color:rgba(255,255,255,0.35); text-align:center; padding:8px 0; }
 @media (max-width:720px) {
   body { padding:4px 2px; gap:4px; justify-content:flex-start; padding-top:8px; }
+  body.playing .right-col { display:none !important; }
+  body.playing .canvas-wrap { flex:1; width:100%; }
   .title-main { font-size:26px; letter-spacing:2px; }
   .title-sub  { font-size:9px; letter-spacing:3px; }
   .left-panel { display:none; }
@@ -287,6 +289,14 @@ body {
   pointer-events:none;
 }
 
+
+/* FULLSCREEN */
+#fs-btn{position:absolute;top:8px;right:8px;z-index:200;
+  background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.18);
+  border-radius:8px;color:#fff;font-size:17px;cursor:pointer;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  opacity:0.65;transition:opacity .2s;}
+#fs-btn:hover{opacity:1;}
 </style>
 </head>
 <body>
@@ -357,7 +367,8 @@ body {
     <div id="evoList"></div>
   </div>
   <div class="canvas-wrap">
-    <canvas id="gameCanvas" width="420" height="640"></canvas>
+    <button id="fs-btn" onclick="toggleFS()" title="全螢幕">⤢</button>
+<canvas id="gameCanvas" width="420" height="640"></canvas>
     <div class="mobile-hud" id="mobileHud">
       <div class="hud-score" id="mobileScoreEl">0</div>
       <div class="hud-next">
@@ -432,18 +443,18 @@ const ZODIAC_IMGS_B64 = [
 const animalImgs = ZODIAC_IMGS_B64.map(src => { const i=new Image(); i.src=src; return i; });
 
 const ANIMALS = [
-  { name:'鼠', r:25,  glow:'rgba(200,200,220,0.8)', pts:1   },
-  { name:'牛', r:28,  glow:'rgba(160,180,160,0.8)', pts:3   },
-  { name:'虎', r:30,  glow:'rgba(255,160,60,0.8)',  pts:6   },
-  { name:'兔', r:32,  glow:'rgba(220,180,255,0.8)', pts:10  },
-  { name:'龍', r:34,  glow:'rgba(255,220,60,0.8)',  pts:15  },
-  { name:'蛇', r:36,  glow:'rgba(100,200,120,0.8)', pts:21  },
-  { name:'馬', r:37,  glow:'rgba(180,210,255,0.8)', pts:28  },
-  { name:'羊', r:40,  glow:'rgba(220,220,200,0.8)', pts:36  },
-  { name:'猴', r:42,  glow:'rgba(200,150,80,0.8)',  pts:45  },
-  { name:'雞', r:44,  glow:'rgba(255,100,80,0.8)',  pts:55  },
-  { name:'狗', r:46,  glow:'rgba(210,160,100,0.8)', pts:78  },
-  { name:'豬', r:48,  glow:'rgba(255,160,190,0.8)', pts:100 },
+  { name:'鼠', r:28,  glow:'rgba(200,200,220,0.8)', pts:1   },
+  { name:'牛', r:31,  glow:'rgba(160,180,160,0.8)', pts:3   },
+  { name:'虎', r:33,  glow:'rgba(255,160,60,0.8)',  pts:6   },
+  { name:'兔', r:35,  glow:'rgba(220,180,255,0.8)', pts:10  },
+  { name:'龍', r:37,  glow:'rgba(255,220,60,0.8)',  pts:15  },
+  { name:'蛇', r:40,  glow:'rgba(100,200,120,0.8)', pts:21  },
+  { name:'馬', r:41,  glow:'rgba(180,210,255,0.8)', pts:28  },
+  { name:'羊', r:44,  glow:'rgba(220,220,200,0.8)', pts:36  },
+  { name:'猴', r:46,  glow:'rgba(200,150,80,0.8)',  pts:45  },
+  { name:'雞', r:48,  glow:'rgba(255,100,80,0.8)',  pts:55  },
+  { name:'狗', r:51,  glow:'rgba(210,160,100,0.8)', pts:78  },
+  { name:'豬', r:53,  glow:'rgba(255,160,190,0.8)', pts:100 },
 ];
 const MAX_LVL=ANIMALS.length-1, SPAWN_POOL=5;
 
@@ -455,17 +466,19 @@ const DANGER_Y=80, DROP_Y=38;
 
 function scaleCanvas(){
   const isMobile=window.innerWidth<=720;
-  const p=isMobile?12:32;
+  const p=isMobile?8:32;
   const panelW=isMobile?0:370;
   const availW=window.innerWidth-p-panelW;
   const scW=availW/CW;
   let scH=1;
   if(isMobile){
-    const titleH=68,bottomH=80,padH=16;
+    const titleH=56,padH=8;
+    const isPlaying=document.body.classList.contains('playing');
+    const bottomH=isPlaying?0:80;
     const availH=window.innerHeight-titleH-bottomH-padH;
-    scH=Math.max(0.45,availH/CH);
+    scH=Math.max(0.5,availH/CH);
   }
-  const sc=Math.max(0.40,Math.min(scW,scH,1)-0.1);
+  const sc=Math.max(0.40,Math.min(scW,scH,1));
   const cw=Math.floor(CW*sc),ch=Math.floor(CH*sc);
   canvas.style.width=cw+'px';
   canvas.style.height=ch+'px';
@@ -560,6 +573,7 @@ function checkGameOver(){
 }
 function triggerGameOver(){
   gameState='gameover'; saveScore(score);
+  document.body.classList.remove('playing'); scaleCanvas();
   const rank=getMyRank(score);
   document.getElementById('ovScore').textContent=`最終分數：${score}`;
   document.getElementById('ovRank').textContent=rank<=3?['🥇 第一名！','🥈 第二名！','🥉 第三名！'][rank-1]:`排行榜第 ${rank} 名`;
@@ -650,6 +664,10 @@ function loop(){
 canvas.addEventListener('mousemove',e=>{mouseX=ptrX(e.clientX);});
 canvas.addEventListener('click',()=>{ initAudio(); drop(); });
 canvas.addEventListener('touchmove',e=>{e.preventDefault();mouseX=ptrX(e.touches[0].clientX);},{passive:false});
+// 防止多指縮放
+document.addEventListener('touchstart',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
+document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
+document.addEventListener('gesturechange',function(e){e.preventDefault();},{passive:false});
 canvas.addEventListener('touchend',e=>{e.preventDefault(); initAudio(); drop();},{passive:false});
 
 function restartGame(){
@@ -660,7 +678,8 @@ function restartGame(){
   _horseUnlocked=false; _horseUsed=false;
   document.getElementById('overlay').classList.remove('show');
   updateHorseBtn();
-  init(); refreshUI();
+  document.body.classList.add('playing');
+  init(); refreshUI(); scaleCanvas();
 }
 
 function confirmName(){
@@ -669,6 +688,8 @@ function confirmName(){
   playerName = name;
   localStorage.setItem('platform_player_name', name);
   document.getElementById('nameOverlay').classList.remove('show');
+  // 自動嘗試進入全螢幕（需在用戶手勢 context 中執行）
+  try{const el=document.documentElement;(el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el);}catch(e){}
   // 封面若還在（首次進入尚未按「開始遊戲」），觸發淡出
   const cover = document.getElementById('cover-screen');
   if(cover && cover.style.display !== 'none'){
@@ -1048,6 +1069,26 @@ function startGame() {
     cover.style.display = 'none';
   }, { once: true });
 }
+
+/* ── 全螢幕 ── */
+function toggleFS(){
+  const el=document.documentElement;
+  const inFS=document.fullscreenElement||document.webkitFullscreenElement;
+  if(!inFS){
+    (el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el);
+  } else {
+    (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);
+  }
+}
+function _syncFSBtn(){
+  const btn=document.getElementById('fs-btn');
+  if(!btn)return;
+  btn.textContent=(document.fullscreenElement||document.webkitFullscreenElement)?'⤡':'⤢';
+  scaleCanvas();
+}
+document.addEventListener('fullscreenchange',_syncFSBtn);
+document.addEventListener('webkitfullscreenchange',_syncFSBtn);
+
 </script>
 </body>
 </html>
