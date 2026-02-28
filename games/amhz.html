@@ -95,7 +95,7 @@ body {
 .lb-empty { font-size:13px; color:rgba(255,255,255,0.35); text-align:center; padding:8px 0; }
 @media (max-width:720px) {
   body { padding:4px 2px; gap:4px; justify-content:flex-start; padding-top:8px; }
-  body.playing .right-col { display:none !important; }
+  body.playing .right-col .panel-lb { display:none !important; }
   body.playing .canvas-wrap { flex:1; width:100%; }
   .title-main { font-size:26px; letter-spacing:2px; }
   .title-sub  { font-size:9px; letter-spacing:3px; }
@@ -297,6 +297,34 @@ body {
   width:34px;height:34px;display:flex;align-items:center;justify-content:center;
   opacity:0.65;transition:opacity .2s;}
 #fs-btn:hover{opacity:1;}
+/* 📊 EVO MODAL BUTTON (mobile only) */
+#evo-modal-btn{
+  display:none;
+  position:fixed;bottom:82px;right:10px;z-index:250;
+  background:rgba(10,8,30,0.92);border:1px solid rgba(200,170,80,0.55);
+  border-radius:50%;width:42px;height:42px;
+  color:#FFD700;font-size:20px;cursor:pointer;
+  align-items:center;justify-content:center;
+  box-shadow:0 3px 14px rgba(0,0,0,0.65);}
+/* EVO MODAL OVERLAY */
+#evo-modal{
+  display:none;position:fixed;inset:0;z-index:600;
+  background:rgba(4,8,22,0.90);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;}
+#evo-modal.show{display:flex;}
+.evo-modal-inner{
+  background:rgba(5,10,25,0.99);border:1px solid rgba(200,170,80,0.3);
+  border-radius:18px;padding:20px 16px;width:90%;max-width:320px;
+  max-height:86vh;overflow-y:auto;}
+.evo-modal-header{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.evo-modal-title{font-size:15px;font-weight:700;color:#FFD700;letter-spacing:1px;}
+.evo-modal-close{
+  background:rgba(255,255,255,0.15);border:none;color:#fff;
+  border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;}
+#evoListModal{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+@media(max-width:720px){#evo-modal-btn{display:flex;}}
 </style>
 </head>
 <body>
@@ -413,7 +441,7 @@ body {
         <div class="next-sub" id="nextNameEl">鼠</div>
       </div>
     </div>
-    <div class="panel">
+    <div class="panel panel-lb">
       <div class="panel-title">🏆 排行榜</div>
       <div id="lbEl"></div>
     </div>
@@ -423,6 +451,18 @@ body {
       </button>
       <div class="horse-btn-hint" id="horseHintEl">消除場上兔以上全部動物</div>
     </div>
+  </div>
+</div>
+<!-- 📊 生肖進化錄 浮動按鈕 (手機版) -->
+<button id="evo-modal-btn" onclick="openEvoModal()" title="生肖進化錄">📊</button>
+<!-- 生肖進化錄 Modal -->
+<div id="evo-modal" onclick="if(event.target===this)closeEvoModal()">
+  <div class="evo-modal-inner">
+    <div class="evo-modal-header">
+      <span class="evo-modal-title">🔯 十二生肖進化錄</span>
+      <button class="evo-modal-close" onclick="closeEvoModal()">✕</button>
+    </div>
+    <div id="evoListModal"></div>
   </div>
 </div>
 <script>
@@ -443,18 +483,18 @@ const ZODIAC_IMGS_B64 = [
 const animalImgs = ZODIAC_IMGS_B64.map(src => { const i=new Image(); i.src=src; return i; });
 
 const ANIMALS = [
-  { name:'鼠', r:28,  glow:'rgba(200,200,220,0.8)', pts:1   },
-  { name:'牛', r:31,  glow:'rgba(160,180,160,0.8)', pts:3   },
-  { name:'虎', r:33,  glow:'rgba(255,160,60,0.8)',  pts:6   },
-  { name:'兔', r:35,  glow:'rgba(220,180,255,0.8)', pts:10  },
-  { name:'龍', r:37,  glow:'rgba(255,220,60,0.8)',  pts:15  },
-  { name:'蛇', r:40,  glow:'rgba(100,200,120,0.8)', pts:21  },
-  { name:'馬', r:41,  glow:'rgba(180,210,255,0.8)', pts:28  },
-  { name:'羊', r:44,  glow:'rgba(220,220,200,0.8)', pts:36  },
-  { name:'猴', r:46,  glow:'rgba(200,150,80,0.8)',  pts:45  },
-  { name:'雞', r:48,  glow:'rgba(255,100,80,0.8)',  pts:55  },
-  { name:'狗', r:51,  glow:'rgba(210,160,100,0.8)', pts:78  },
-  { name:'豬', r:53,  glow:'rgba(255,160,190,0.8)', pts:100 },
+  { name:'鼠', r:31,  glow:'rgba(200,200,220,0.8)', pts:1   },
+  { name:'牛', r:35,  glow:'rgba(160,180,160,0.8)', pts:3   },
+  { name:'虎', r:39,  glow:'rgba(255,160,60,0.8)',  pts:6   },
+  { name:'兔', r:42,  glow:'rgba(220,180,255,0.8)', pts:10  },
+  { name:'龍', r:46,  glow:'rgba(255,220,60,0.8)',  pts:15  },
+  { name:'蛇', r:51,  glow:'rgba(100,200,120,0.8)', pts:21  },
+  { name:'馬', r:54,  glow:'rgba(180,210,255,0.8)', pts:28  },
+  { name:'羊', r:60,  glow:'rgba(220,220,200,0.8)', pts:36  },
+  { name:'猴', r:64,  glow:'rgba(200,150,80,0.8)',  pts:45  },
+  { name:'雞', r:69,  glow:'rgba(255,100,80,0.8)',  pts:55  },
+  { name:'狗', r:75,  glow:'rgba(210,160,100,0.8)', pts:78  },
+  { name:'豬', r:80,  glow:'rgba(255,160,190,0.8)', pts:100 },
 ];
 const MAX_LVL=ANIMALS.length-1, SPAWN_POOL=5;
 
@@ -473,8 +513,7 @@ function scaleCanvas(){
   let scH=1;
   if(isMobile){
     const titleH=56,padH=8;
-    const isPlaying=document.body.classList.contains('playing');
-    const bottomH=isPlaying?0:80;
+    const bottomH=70;
     const availH=window.innerHeight-titleH-bottomH-padH;
     scH=Math.max(0.5,availH/CH);
   }
@@ -1088,6 +1127,17 @@ function _syncFSBtn(){
 }
 document.addEventListener('fullscreenchange',_syncFSBtn);
 document.addEventListener('webkitfullscreenchange',_syncFSBtn);
+
+/* ── 生肖進化錄 Modal (手機) ── */
+function openEvoModal(){
+  const src=document.getElementById('evoList');
+  const tgt=document.getElementById('evoListModal');
+  if(src&&tgt) tgt.innerHTML=src.innerHTML;
+  document.getElementById('evo-modal').classList.add('show');
+}
+function closeEvoModal(){
+  document.getElementById('evo-modal').classList.remove('show');
+}
 
 </script>
 </body>
