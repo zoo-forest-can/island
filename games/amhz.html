@@ -72,6 +72,13 @@ body {
   box-shadow:0 4px 20px rgba(255,90,60,0.45); transition:transform 0.15s,box-shadow 0.15s;
 }
 .btn-again:hover { transform:scale(1.06); box-shadow:0 6px 28px rgba(255,90,60,0.65); }
+.btn-share {
+  background:linear-gradient(135deg,#4ECDC4,#44B0A8); border:none; color:white;
+  padding:12px 28px; border-radius:28px; font-size:15px; font-weight:700;
+  cursor:pointer; font-family:inherit; letter-spacing:.5px; margin-top:10px;
+  transition:transform .15s,box-shadow .15s; display:block; width:100%;
+}
+.btn-share:hover { transform:scale(1.04); box-shadow:0 4px 18px rgba(78,205,196,0.45); }
 .right-col { display:flex; flex-direction:column; gap:10px; width:185px; flex-shrink:0; padding:10px 8px 10px 8px; }
 .score-big { font-size:42px; font-weight:900; color:#FFD700; text-align:center; text-shadow:0 0 14px rgba(255,215,0,0.4); line-height:1.1; margin-bottom:7px; }
 .best-row { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.08); border-radius:9px; padding:5px 9px; font-size:13px; }
@@ -376,6 +383,7 @@ body {
       <div class="ov-score" id="ovScore">分數：0</div>
       <div class="ov-rank"  id="ovRank"></div>
       <button class="btn-again" onclick="restartGame()">🔄 再玩一次</button>
+      <button class="btn-share" onclick="shareResult()">📤 分享成績</button>
     </div>
   </div>
   <div class="right-col">
@@ -425,17 +433,17 @@ const animalImgs = ZODIAC_IMGS_B64.map(src => { const i=new Image(); i.src=src; 
 
 const ANIMALS = [
   { name:'鼠', r:23,  glow:'rgba(200,200,220,0.8)', pts:1   },
-  { name:'牛', r:32,  glow:'rgba(160,180,160,0.8)', pts:3   },
-  { name:'虎', r:44,  glow:'rgba(255,160,60,0.8)',  pts:6   },
-  { name:'兔', r:57,  glow:'rgba(220,180,255,0.8)', pts:10  },
-  { name:'龍', r:71,  glow:'rgba(255,220,60,0.8)',  pts:15  },
-  { name:'蛇', r:86,  glow:'rgba(100,200,120,0.8)', pts:21  },
-  { name:'馬', r:101, glow:'rgba(180,210,255,0.8)', pts:28  },
-  { name:'羊', r:117, glow:'rgba(220,220,200,0.8)', pts:36  },
-  { name:'猴', r:135, glow:'rgba(200,150,80,0.8)',  pts:45  },
-  { name:'雞', r:153, glow:'rgba(255,100,80,0.8)',  pts:55  },
-  { name:'狗', r:173, glow:'rgba(210,160,100,0.8)', pts:78  },
-  { name:'豬', r:192, glow:'rgba(255,160,190,0.8)', pts:100 },
+  { name:'牛', r:25,  glow:'rgba(160,180,160,0.8)', pts:3   },
+  { name:'虎', r:27,  glow:'rgba(255,160,60,0.8)',  pts:6   },
+  { name:'兔', r:29,  glow:'rgba(220,180,255,0.8)', pts:10  },
+  { name:'龍', r:31,  glow:'rgba(255,220,60,0.8)',  pts:15  },
+  { name:'蛇', r:33,  glow:'rgba(100,200,120,0.8)', pts:21  },
+  { name:'馬', r:34, glow:'rgba(180,210,255,0.8)', pts:28  },
+  { name:'羊', r:36, glow:'rgba(220,220,200,0.8)', pts:36  },
+  { name:'猴', r:38, glow:'rgba(200,150,80,0.8)',  pts:45  },
+  { name:'雞', r:40, glow:'rgba(255,100,80,0.8)',  pts:55  },
+  { name:'狗', r:42, glow:'rgba(210,160,100,0.8)', pts:78  },
+  { name:'豬', r:44, glow:'rgba(255,160,190,0.8)', pts:100 },
 ];
 const MAX_LVL=ANIMALS.length-1, SPAWN_POOL=5;
 
@@ -556,6 +564,7 @@ function triggerGameOver(){
   document.getElementById('ovScore').textContent=`最終分數：${score}`;
   document.getElementById('ovRank').textContent=rank<=3?['🥇 第一名！','🥈 第二名！','🥉 第三名！'][rank-1]:`排行榜第 ${rank} 名`;
   document.getElementById('overlay').classList.add('show'); updateLB();
+  incrementPlayCount();
 }
 
 function addFlash(x,y,r){flashes.push({x,y,r,a:1});}
@@ -676,6 +685,29 @@ function postToFirebase(path,data){
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify(data)
   }).catch(()=>{});
+}
+
+/* 遊玩次數累計 */
+async function incrementPlayCount(){
+  try{
+    const url=`${FB_URL}/playCount.json`;
+    const r1=await fetch(url);
+    const cur=(await r1.json())||0;
+    await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cur+1)});
+  }catch(e){}
+}
+
+/* 分享成績 */
+function shareResult(){
+  const pName=localStorage.getItem('platform_player_name')||'玩家';
+  const sc=document.getElementById('ovScore').textContent||'';
+  const text=`🐾 ${pName} 在《動物合盒樂》拿到 ${sc.replace('最終分數：','')} 分！
+快來挑戰 👉 https://zoo-forest-can.github.io/island/`;
+  if(navigator.share){
+    navigator.share({title:'動物合盒樂',text}).catch(()=>{});
+  }else{
+    navigator.clipboard.writeText(text).then(()=>alert('✅ 成績已複製到剪貼板！')).catch(()=>alert(text));
+  }
 }
 
 function getLB(){

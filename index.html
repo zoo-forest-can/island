@@ -71,6 +71,28 @@
     .td-date{color:var(--muted);font-size:11px;text-align:right;}
     .lb-empty{text-align:center;color:var(--muted);padding:36px 0;font-size:13px;}
     .lb-note{text-align:center;margin-top:20px;color:var(--muted);font-size:12px;letter-spacing:1px;}
+    .btn-rules{display:inline-block;background:transparent;color:var(--muted);font-weight:700;font-size:12px;
+      letter-spacing:1px;padding:9px 18px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);cursor:pointer;
+      font-family:inherit;transition:all .2s;}
+    .btn-rules:hover{color:var(--text);border-color:rgba(255,255,255,0.35);}
+    .btn-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .play-count{font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px;}
+    .game-card-wrap{background:var(--card);border-radius:20px;overflow:hidden;border:1px solid var(--border);
+      transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease;}
+    .game-card-wrap:hover{transform:translateY(-10px) scale(1.02);box-shadow:0 28px 52px rgba(0,0,0,.7);}
+    .game-card-link{display:block;text-decoration:none;color:inherit;}
+    /* Rules Modal */
+    #rules-modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.82);
+      align-items:center;justify-content:center;padding:24px;}
+    #rules-modal.open{display:flex;}
+    .rules-box{background:#141b2e;border-radius:20px;padding:32px 28px;max-width:420px;width:100%;
+      border:1px solid rgba(255,200,50,0.25);position:relative;max-height:85vh;overflow-y:auto;}
+    .rules-box h3{font-size:18px;font-weight:900;margin-bottom:20px;color:#FFD700;letter-spacing:2px;}
+    .rule-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+    .rule-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+    .rule-text{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;}
+    .rules-close{margin-top:20px;width:100%;padding:12px;background:var(--orange);border:none;border-radius:12px;
+      color:#000;font-weight:900;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:2px;}
     footer{position:relative;z-index:1;text-align:center;padding:44px 24px;color:var(--muted);font-size:13px;border-top:1px solid var(--border);}
     @media(max-width:860px){.banner-text{left:24px;bottom:24px;}}
     @media(max-width:560px){.game-grid,.lb-grid{grid-template-columns:1fr;}nav{padding:0 20px;}.nav-links{display:none;}.banner{height:200px;}}
@@ -80,6 +102,7 @@
 
 <nav>
   <div class="nav-brand">路否羅</div>
+  <div id="nav-player" style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;letter-spacing:1px;display:none;">👤 <span id="nav-player-name"></span></div>
   <ul class="nav-links">
     <li><a href="#" onclick="switchTab('games');return false;">遊戲大廳</a></li>
     <li><a href="#" onclick="switchTab('lb');return false;">排行榜</a></li>
@@ -111,22 +134,34 @@
 <section id="games" class="wrap">
   <h2 class="sec-title">遊戲 <em>大廳</em></h2>
   <div class="game-grid">
-    <a href="games/amhz.html" class="game-card">
-      <img src="images/mix.png" alt="動物合盒樂" class="game-cover">
+    <div class="game-card-wrap">
+      <a href="games/amhz.html" class="game-card-link">
+        <img src="images/mix.png" alt="動物合盒樂" class="game-cover">
+      </a>
       <div class="game-body">
         <div class="game-name">動物合盒樂</div>
         <div class="game-desc">疊疊合體的生肖小遊戲！把動物往下丟，讓相同生肖合體進化，堆越高分數越高～</div>
-        <span class="btn-go">立刻挑戰 ▶</span>
+        <div class="play-count" id="play-count-amhz">🎮 載入中...</div>
+        <div class="btn-actions">
+          <a href="games/amhz.html" class="btn-go">立刻挑戰 ▶</a>
+          <button class="btn-rules" onclick="showRules('amhz')">玩法說明</button>
+        </div>
       </div>
-    </a>
-    <a href="games/bb.html" class="game-card">
-      <img src="images/homerun.png" alt="動物轟不讓" class="game-cover">
+    </div>
+    <div class="game-card-wrap">
+      <a href="games/bb.html" class="game-card-link">
+        <img src="images/homerun.png" alt="動物轟不讓" class="game-cover">
+      </a>
       <div class="game-body">
         <div class="game-name">動物轟不讓</div>
         <div class="game-desc">生肖棒球全壘打挑戰！選你的生肖選手，猛打全壘打，5回合決一勝負！</div>
-        <span class="btn-go">立刻挑戰 ▶</span>
+        <div class="play-count" id="play-count-bb">🎮 載入中...</div>
+        <div class="btn-actions">
+          <a href="games/bb.html" class="btn-go">立刻挑戰 ▶</a>
+          <button class="btn-rules" onclick="showRules('bb')">玩法說明</button>
+        </div>
       </div>
-    </a>
+    </div>
   </div>
 </section>
 </section><!-- /section-games -->
@@ -160,6 +195,77 @@
 
 <script>
 const FB_URL='https://zoo-forest-7132c-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+/* ── 遊戲設定（新增遊戲只需加此陣列，其餘自動支援） ── */
+const GAMES_CONFIG = {
+  amhz: {
+    name: '動物合盒樂',
+    rules: [
+      ['🐾','從上方投下動物，讓相同生肖合體進化！'],
+      ['🔢','12種生肖，越大的動物分數越高！'],
+      ['⚠️','動物堆疊超過紅線即遊戲結束'],
+      ['🌟','天降神蹟：特殊事件帶來驚喜！'],
+      ['🏆','合體越多，分數越高，衝榜！'],
+    ]
+  },
+  bb: {
+    name: '動物轟不讓',
+    rules: [
+      ['🎯','每回合10球，計時揮棒，打出全壘打！'],
+      ['⚡','界外球不扣球數，繼續拚！'],
+      ['💪','角色力量越高，越容易擊出全壘打'],
+      ['🔄','10球全壘打 → 進入下一回合，換新投手'],
+      ['🏆','最多5回合，難度每回升！'],
+      ['✨','連續10全壘打 → 隱藏驚喜！'],
+    ]
+  }
+};
+
+/* ── 科學記號格式化 ── */
+function formatCount(n){
+  if(n>=1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'')+'M';
+  if(n>=1000) return (n/1000).toFixed(1).replace(/\.0$/,'')+'K';
+  return String(n);
+}
+
+/* ── 讀取全平台遊玩次數（僅載入一次，節省 Firebase 用量） ── */
+let _playCountCache = null;
+async function loadPlayCount(){
+  try{
+    const r = await fetch(`${FB_URL}/playCount.json`);
+    _playCountCache = (await r.json()) || 0;
+    const label = '🎮 ' + formatCount(_playCountCache) + ' 次遊玩';
+    document.querySelectorAll('[id^="play-count-"]').forEach(el=>{ el.textContent = label; });
+  }catch(e){
+    document.querySelectorAll('[id^="play-count-"]').forEach(el=>{ el.textContent = '🎮 —'; });
+  }
+}
+
+/* ── 玩法說明 Modal ── */
+function showRules(gameId){
+  const cfg = GAMES_CONFIG[gameId];
+  if(!cfg) return;
+  document.getElementById('rules-modal-title').textContent = '📖 ' + cfg.name + ' 玩法說明';
+  document.getElementById('rules-modal-content').innerHTML = cfg.rules.map(([icon,text])=>
+    `<div class="rule-item"><span class="rule-icon">${icon}</span><span class="rule-text">${text}</span></div>`
+  ).join('');
+  document.getElementById('rules-modal').classList.add('open');
+}
+// 點擊 modal 背景關閉
+document.getElementById && window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('rules-modal').addEventListener('click',function(e){
+    if(e.target===this) this.classList.remove('open');
+  });
+});
+
+/* ── 顯示玩家名稱於導覽列 ── */
+function showPlayerInNav(){
+  const name = localStorage.getItem('platform_player_name');
+  if(name){
+    document.getElementById('nav-player-name').textContent = name;
+    document.getElementById('nav-player').style.display = '';
+  }
+}
 const MEDALS=['🥇','🥈','🥉'];
 
 async function checkMonthlyReset(){
@@ -225,9 +331,19 @@ function switchTab(tab){
 
 document.addEventListener('DOMContentLoaded',async function(){
   await checkMonthlyReset();
+  showPlayerInNav();
+  loadPlayCount();
   loadAll();
   setInterval(loadAll,10000);
 });
 </script>
+<!-- Rules Modal -->
+<div id="rules-modal">
+  <div class="rules-box">
+    <h3 id="rules-modal-title">玩法說明</h3>
+    <div id="rules-modal-content"></div>
+    <button class="rules-close" onclick="document.getElementById('rules-modal').classList.remove('open')">關閉</button>
+  </div>
+</div>
 </body>
 </html>
