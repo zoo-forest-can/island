@@ -406,13 +406,13 @@ function drawBatter(ch, swingPhase, ts){
   const sh=HS.cropH;
 
   // 目標尺寸（縮放至遊戲高度）
-  const tH=148;
+  const tH=190;
   const scale=tH/sh;
-  const tW=sw*scale;  // ~118px
+  const tW=sw*scale;  // ~162px
 
-  // 位置：腳底錨點右側
-  const charX=42;   // 左打，左側
-  const charY=H+10;   // 570
+  // 位置：左打，動態錨點確保球棒不被截斷
+  const charX=Math.round(tW/2)+8;  // 球棒保留左邊距
+  const charY=H-22;   // 往上移，足部在 538px
 
   C.save();
   C.translate(charX,charY);
