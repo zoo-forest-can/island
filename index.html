@@ -350,15 +350,19 @@ async function loadPlayCount(){
     // ── 同步排行榜 panel 順序（與遊戲卡片一致）
     const lbGrid = document.querySelector('.lb-grid');
     if(lbGrid){
-      const lbPanels = Array.from(lbGrid.querySelectorAll('.lb-panel'));
-      lbPanels.sort((a, b) => {
-        const tbA = a.querySelector('tbody[id]');
-        const tbB = b.querySelector('tbody[id]');
-        const gameA = tbA ? tbA.id.replace('leaderboard-','').replace('-body','') : '';
-        const gameB = tbB ? tbB.id.replace('leaderboard-','').replace('-body','') : '';
-        return (counts[gameB]||0) - (counts[gameA]||0);
+      // 基於已排序的遊戲卡片順序，重新排列 lb-panel
+      gameCards.forEach(card => {
+        const linkA = card.querySelector('a[href*="games/"]');
+        const gameId = linkA ? linkA.getAttribute('href').match(/games\/([^.]+)/)[1] : null;
+        if(gameId){
+          // 尋找對應的 lb-panel（via tbody id）
+          const panel = Array.from(lbGrid.querySelectorAll('.lb-panel')).find(p => {
+            const tb = p.querySelector('tbody[id]');
+            return tb && tb.id === `leaderboard-${gameId}-body`;
+          });
+          if(panel) lbGrid.appendChild(panel);
+        }
       });
-      lbPanels.forEach(p => lbGrid.appendChild(p));
     }
   }
 }
