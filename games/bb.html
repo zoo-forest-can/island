@@ -395,8 +395,8 @@ function drawBatter(ch, swingPhase, ts){
     const f=swingPhase/0.45; // 1.0(起始)→0.0(完成)
     frameIdx=4+Math.min(HS.swingFrames-1, Math.floor((1-f)*HS.swingFrames));
   } else {
-    // 待機幀：frames 0-3，依時間循環（每180ms換幀）
-    frameIdx=Math.floor(ts/180)%HS.idleFrames;
+    // 待機：靜止在 frame 0，不自動播放
+    frameIdx=0;
   }
 
   // 雪碧圖裁切來源
@@ -411,7 +411,7 @@ function drawBatter(ch, swingPhase, ts){
   const tW=sw*scale;  // ~118px
 
   // 位置：腳底錨點右側
-  const charX=W-42;   // 318
+  const charX=42;   // 左打，左側
   const charY=H+10;   // 570
 
   C.save();
@@ -424,7 +424,7 @@ function drawBatter(ch, swingPhase, ts){
   // 繪製馬雪碧圖（水平翻轉讓角色面向左方/投手）
   if(HORSE_SPRITE.complete && HORSE_SPRITE.naturalWidth>0){
     C.save();
-    C.scale(-1,1);  // 翻轉：面向左（投手方向）
+    // 不翻轉：雪碧圖朝右，左打者站左側正好面向投手
     C.drawImage(HORSE_SPRITE, sx, sy, sw, sh, -tW/2, -tH, tW, tH);
     C.restore();
   } else {
