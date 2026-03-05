@@ -87,11 +87,11 @@
     .game-card-wrap:hover{transform:translateY(-10px) scale(1.02);box-shadow:0 28px 52px rgba(0,0,0,.7);}
     .game-card-link{display:block;text-decoration:none;color:inherit;}
     /* NEW / HOT badges */
-    .badge-new,.badge-hot{position:absolute;top:10px;left:10px;z-index:10;
+    .badge-new{position:absolute;top:10px;left:10px;z-index:10;
       font-size:11px;font-weight:900;letter-spacing:2px;padding:4px 10px;
       border-radius:100px;line-height:1;pointer-events:none;}
     .badge-new{background:#FF8C2A;color:#000;box-shadow:0 2px 8px rgba(255,140,42,.55);}
-    .badge-hot{background:#FF3030;color:#fff;box-shadow:0 2px 8px rgba(255,48,48,.55);}
+    .badge-hot{position:absolute;top:10px;right:10px;z-index:10;background:linear-gradient(135deg,#FF8C2A,#FFD166);color:#080c1a;font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;}
     .game-cover-wrap{position:relative;display:block;}
     /* Rules Modal */
     #rules-modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.82);
@@ -145,7 +145,7 @@
   <div class="game-grid">
     <div class="game-card-wrap">
       <a href="games/match3.html" class="game-card-link game-cover-wrap">
-        <span class="badge-new">NEW</span>
+        <span class="badge-hot">熱門</span>
         <img src="images/match3-cover.jpg" alt="動物消消樂" class="game-cover">
       </a>
       <div class="game-body">
@@ -159,7 +159,8 @@
       </div>
     </div>
     <div class="game-card-wrap">
-      <a href="games/amhz.html" class="game-card-link">
+      <a href="games/amhz.html" class="game-card-link game-cover-wrap">
+        <span class="badge-hot">熱門</span>
         <img src="images/mix.png" alt="動物合盒樂" class="game-cover">
       </a>
       <div class="game-body">
@@ -173,7 +174,8 @@
       </div>
     </div>
     <div class="game-card-wrap">
-      <a href="games/bb.html" class="game-card-link">
+      <a href="games/bb.html" class="game-card-link game-cover-wrap">
+        <span class="badge-hot">熱門</span>
         <img src="images/homerun.png" alt="動物轟不讓" class="game-cover">
       </a>
       <div class="game-body">
@@ -183,6 +185,21 @@
         <div class="btn-actions">
           <a href="games/bb.html" class="btn-go">立刻挑戰 ▶</a>
           <button class="btn-rules" onclick="showRules('bb')">玩法說明</button>
+        </div>
+      </div>
+    </div>
+    <!-- 連連看 -->
+    <div class="game-card-wrap">
+      <a href="games/llk.html" class="game-card-link game-cover-wrap">
+        <img src="images/llk-cover.png" alt="動物連連看" class="game-cover">
+      </a>
+      <div class="game-body">
+        <div class="game-name">動物連連看</div>
+        <div class="game-desc">配對可愛動物，挑戰疊疊樂消除！5關交替，限時闖關</div>
+        <div class="play-count" id="play-count-llk">🎮 載入中...</div>
+        <div class="btn-actions">
+          <a href="games/llk.html" class="btn-go">立刻挑戰 ▶</a>
+          <button class="btn-rules" onclick="showRules('llk')">玩法說明</button>
         </div>
       </div>
     </div>
@@ -210,7 +227,6 @@
       </table>
       <div id="leaderboard-bb-empty" class="lb-empty" style="display:none">還沒有高手記錄，快去挑戰吧！🎮</div>
     </div>
-  </div>
     <div class="lb-panel">
       <div class="lb-panel-title">🐾 動物消消樂</div>
       <table>
@@ -219,6 +235,7 @@
       </table>
       <div id="leaderboard-match3-empty" class="lb-empty" style="display:none">還沒有高手記錄，快去挑戰吧！🎮</div>
     </div>
+  </div>
   <p class="lb-note">📅 排行榜每月 1 日自動重置</p>
 </section>
 </section><!-- /section-lb -->
@@ -279,6 +296,16 @@ const GAMES_CONFIG = {
       ['💡','超過 3 秒不動，系統自動提示可消除位置'],
       ['🏆','完成後可輸入暱稱，送上全球排行榜！'],
     ]
+  },
+  llk: {
+    name: '動物連連看',
+    rules: [
+      ['🎮','奇數關：找出相同動物並連線消除（路徑轉彎≤2次）'],
+      ['🎯','偶數關：點選同色相連方塊消除（疊疊樂模式）'],
+      ['⏱️','限時闖關，連消有 Combo 加成！'],
+      ['🌟','路徑越短，消除越快，分數倍率越高'],
+      ['🏆','挑戰 5 關制霸，衝上排行榜！'],
+    ]
   }
 };
 
@@ -291,7 +318,7 @@ function formatCount(n){
 
 /* ── 讀取各遊戲遊玩次數 + HOT badge 邏輯 ── */
 async function loadPlayCount(){
-  const games = ['amhz','bb','match3'];
+  const games = ['amhz','bb','match3','llk'];
   const counts = {};
   await Promise.all(games.map(async g => {
     try{
@@ -304,18 +331,34 @@ async function loadPlayCount(){
     const el = document.getElementById(`play-count-${g}`);
     if(el) el.textContent = '🎮 ' + formatCount(counts[g]) + ' 次遊玩';
   });
-  // HOT badge：遊玩次數最多的遊戲
-  const maxCount = Math.max(...Object.values(counts));
-  if(maxCount > 0){
-    const hotGame = games.find(g => counts[g] === maxCount);
-    // 只對沒有 NEW badge 的遊戲顯示 HOT
-    const hotLink = document.querySelector(`a[href="games/${hotGame}.html"].game-card-link`);
-    if(hotLink && !hotLink.querySelector('.badge-new')){
-      const badge = document.createElement('span');
-      badge.className = 'badge-hot';
-      badge.textContent = 'HOT 🔥';
-      hotLink.style.position = 'relative';
-      hotLink.insertBefore(badge, hotLink.firstChild);
+  // ──動態排序遊戲卡片（根據 playCount 由高到低）
+  const gameContainer = document.querySelector('.game-grid');
+  if(gameContainer) {
+    const gameCards = Array.from(gameContainer.querySelectorAll('.game-card-wrap'));
+    gameCards.sort((a, b) => {
+      const linkA = a.querySelector('a[href*="games/"]');
+      const linkB = b.querySelector('a[href*="games/"]');
+      const gameA = linkA ? linkA.getAttribute('href').match(/games\/([^.]+)/)[1] : '';
+      const gameB = linkB ? linkB.getAttribute('href').match(/games\/([^.]+)/)[1] : '';
+      const countA = counts[gameA] || 0;
+      const countB = counts[gameB] || 0;
+      return countB - countA; // 由高到低排序
+    });
+    // 重新插入排序後的卡片到容器
+    gameCards.forEach(card => gameContainer.appendChild(card));
+
+    // ── 同步排行榜 panel 順序（與遊戲卡片一致）
+    const lbGrid = document.querySelector('.lb-grid');
+    if(lbGrid){
+      const lbPanels = Array.from(lbGrid.querySelectorAll('.lb-panel'));
+      lbPanels.sort((a, b) => {
+        const tbA = a.querySelector('tbody[id]');
+        const tbB = b.querySelector('tbody[id]');
+        const gameA = tbA ? tbA.id.replace('leaderboard-','').replace('-body','') : '';
+        const gameB = tbB ? tbB.id.replace('leaderboard-','').replace('-body','') : '';
+        return (counts[gameB]||0) - (counts[gameA]||0);
+      });
+      lbPanels.forEach(p => lbGrid.appendChild(p));
     }
   }
 }
@@ -415,6 +458,12 @@ document.addEventListener('DOMContentLoaded',async function(){
   loadPlayCount();
   loadAll();
   setInterval(loadAll,10000);
+  window.addEventListener('storage', function(e){
+    if(e.key==='platform_player_name') showPlayerInNav();
+  });
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState==='visible') showPlayerInNav();
+  });
   // 還原 nav panel 上次狀態
   if(localStorage.getItem('nav_panel_open')==='1') toggleNav(true);
 });

@@ -166,6 +166,16 @@ function initAudio(){if(!AC)try{AC=new(window.AudioContext||window.webkitAudioCo
 function toggleMute(){
   isMuted=!isMuted;
   document.getElementById('mute-btn').textContent=isMuted?'🔇':'🔊';
+  if(isMuted){
+    // 詢問是否靜音影片
+    var muteVideo = confirm("是否連影片特效也一起靜音？");
+    var lv = document.getElementById("lvl-video");
+    if(muteVideo && lv) lv.muted = true;
+  } else {
+    // 恢復影片音量
+    var lv = document.getElementById("lvl-video");
+    if(lv) lv.muted = false;
+  }
 }
 function beep(freq,dur,vol,type){
   if(!AC||isMuted)return;

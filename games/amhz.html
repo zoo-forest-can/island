@@ -767,7 +767,7 @@ function postToFirebase(path,data){
 /* 遊玩次數累計 */
 async function incrementPlayCount(){
   try{
-    const url=`${FB_URL}/playCount.json`;
+    const url=`${FB_URL}/playCount_amhz.json`;
     const r1=await fetch(url);
     const cur=(await r1.json())||0;
     await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cur+1)});
@@ -1096,11 +1096,20 @@ function toggleMute(){
   const btn = document.getElementById('muteBtn');
   if(_muted){
     btn.textContent='🔇'; btn.title='開啟聲音';
+    // 靜音音樂
     if(_bgmGain) _bgmGain.gain.setTargetAtTime(0,_ctx().currentTime,0.2);
+    // 詢問是否靜音影片
+    var muteVideo = confirm("是否連影片特效也一起靜音？");
+    var hv = document.getElementById("horseVideo");
+    if(muteVideo && hv) hv.muted = true;
   } else {
     btn.textContent='🔊'; btn.title='靜音';
+    // 恢復音樂
     if(_bgmGain) _bgmGain.gain.setTargetAtTime(0.07,_ctx().currentTime,0.2);
     if(!_bgmGoing) startBGM();
+    // 恢復影片音量
+    var hv = document.getElementById("horseVideo");
+    if(hv) hv.muted = false;
   }
 }
 
