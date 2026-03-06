@@ -253,12 +253,14 @@
                     <div class="g-overlay-title">🏆 排行榜</div>
                     <div class="g-leaderboard" id="leaderboardList"></div>
                     <div class="g-btn-group">
+                        <button class="g-btn" id="lbShareBtn">分享成績</button>
+                        <button class="g-btn" id="playAgainBtn">再玩一次</button>
                         <button class="g-btn" id="restartBtn">重新開始</button>
                     </div>
                 </div>
             </div>
             <div id="videoOverlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:#000;z-index:200;align-items:center;justify-content:center;flex-direction:column;">
-                <video id="clearVideo" src="foxy.mp4" style="width:100%;height:100%;object-fit:cover;" playsinline></video>
+                <video id="clearVideo" src="foxy.mp4" style="width:100%;height:100%;object-fit:cover;" playsinline muted></video>
             </div>
         </div>
     </div>
@@ -690,7 +692,9 @@
             gameState.path = [];
             gameState.hint.pair = null;       // 清除上一關的 hint 標記，但保留剩餘次數
             gameState.hint.showTime = null;
-            // hint.available 與 shuffle.available 過關不補充
+            // 每關重置道具次數
+            gameState.hint.available = 2;
+            gameState.shuffle.available = 2;
             gameState.particles = [];
             gameState.animatingPath = false;
 
@@ -712,16 +716,17 @@
             const y = (e.clientY - rect.top) * scaleY;
             const level = LEVELS[gameState.currentLevel];
 
-            // HUD 區域（底部 50px）：💡 提示 / 🔄 洗牌
-            if (y >= CANVAS.height - 50) {
-                if (level.type === 'llk') {
-                    if (x < CANVAS.width / 2) {
+            // 道具按鈕區域（HUD 正下方 y=50~84）：💡 提示 / 🔄 洗牌
+            if (level.type === 'llk' && y >= 50 && y <= 84) {
+                const midX = CANVAS.width / 2;
+                if (x >= midX - 102 && x <= midX + 102) {
+                    if (x < midX) {
                         handleHint();
                     } else {
                         handleShuffle();
                     }
+                    return;
                 }
-                return;
             }
 
             if (level.type === 'llk') {
@@ -736,10 +741,10 @@
             if (gameState.animatingPath) return;
 
             const level = LEVELS[gameState.currentLevel];
-            const tileSize = Math.min(Math.floor(CANVAS.width / level.cols), Math.floor((CANVAS.height - 60) / level.rows));
+            const tileSize = Math.min(Math.floor(CANVAS.width / level.cols), Math.floor((CANVAS.height - 80) / level.rows));
             const tileWidth = tileSize, tileHeight = tileSize;
             const offsetX = Math.round((CANVAS.width - tileSize * level.cols) / 2);
-            const offsetY = Math.round(((CANVAS.height - 60) - tileSize * level.rows) / 2);
+            const offsetY = Math.round(((CANVAS.height - 80) - tileSize * level.rows) / 2);
             const col = Math.floor((x - offsetX) / tileSize);
             const row = Math.floor((y - offsetY) / tileSize);
 
@@ -775,7 +780,7 @@
                     gameState.lastComboTime = Date.now();
                     const multiplier = Math.min(gameState.combo, 5);
                     gameState.score += 2 * 10 * multiplier;
-                    gameState.time = Math.min(gameState.time + 3, LEVELS[gameState.currentLevel].time + 30);
+                    gameState.time = Math.min(gameState.time + 5, LEVELS[gameState.currentLevel].time + 60);
 
                     setTimeout(() => {
                         gameState.animatingPath = false;
@@ -815,7 +820,7 @@
         function handleStackClick(x, y) {
             const level = LEVELS[gameState.currentLevel];
             const tileWidth = CANVAS.width / level.cols;
-            const tileHeight = (CANVAS.height - 60) / level.rows;
+            const tileHeight = (CANVAS.height - 80) / level.rows;
             const col = Math.floor(x / tileWidth);
             const row = Math.floor(y / tileHeight);
 
@@ -919,10 +924,10 @@
 
         function drawLLK() {
             const level = LEVELS[gameState.currentLevel];
-            const tileSize = Math.min(Math.floor(CANVAS.width / level.cols), Math.floor((CANVAS.height - 60) / level.rows));
+            const tileSize = Math.min(Math.floor(CANVAS.width / level.cols), Math.floor((CANVAS.height - 80) / level.rows));
             const tileWidth = tileSize, tileHeight = tileSize;
             const offsetX = Math.round((CANVAS.width - tileSize * level.cols) / 2);
-            const offsetY = Math.round(((CANVAS.height - 60) - tileSize * level.rows) / 2);
+            const offsetY = Math.round(((CANVAS.height - 80) - tileSize * level.rows) / 2);
 
             for (let r = 0; r < level.rows; r++) {
                 for (let c = 0; c < level.cols; c++) {
@@ -1070,7 +1075,7 @@
                 const alpha = progress < 0.7 ? 1 : 1 - (progress - 0.7) / 0.3;
                 CTX.save();
                 CTX.globalAlpha = alpha;
-                const msgW = 220, msgH = 54, msgX = (CANVAS.width - msgW) / 2, msgY = (CANVAS.height - 60) / 2 - 27;
+                const msgW = 220, msgH = 54, msgX = (CANVAS.width - msgW) / 2, msgY = (CANVAS.height - 80) / 2 - 27;
                 const mg = CTX.createLinearGradient(msgX, msgY, msgX, msgY + msgH);
                 mg.addColorStop(0, 'rgba(255,100,60,0.92)');
                 mg.addColorStop(1, 'rgba(180,40,20,0.88)');
@@ -1081,7 +1086,7 @@
                 CTX.fillStyle = '#fff';
                 CTX.font = 'bold 18px Noto Sans TC';
                 CTX.textAlign = 'center';
-                CTX.fillText('NO LINK 🔄 刷新中！', CANVAS.width / 2, msgY + 32);
+                CTX.fillText('🔄 重新刷新中', CANVAS.width / 2, msgY + 32);
                 CTX.restore();
             } else if (gameState.noLinkMsg && Date.now() - gameState.noLinkMsg >= 2200) {
                 gameState.noLinkMsg = null;
@@ -1092,7 +1097,7 @@
         function drawStack() {
             const level = LEVELS[gameState.currentLevel];
             const tileWidth = CANVAS.width / level.cols;
-            const tileHeight = (CANVAS.height - 60) / level.rows;
+            const tileHeight = (CANVAS.height - 80) / level.rows;
 
             for (let r = 0; r < level.rows; r++) {
                 for (let c = 0; c < level.cols; c++) {
@@ -1123,56 +1128,97 @@
         }
 
         function drawUI() {
-            const y = CANVAS.height - 50;
-            // 半透明深色底欄 with 漸層
-            const hudGrad = CTX.createLinearGradient(0, y, 0, y + 50);
-            hudGrad.addColorStop(0, 'rgba(20, 15, 45, 0.85)');
-            hudGrad.addColorStop(1, 'rgba(8, 10, 25, 0.98)');
+            // ── 頂部 HUD (y=0-44) ──
+            const hudGrad = CTX.createLinearGradient(0, 0, 0, 44);
+            hudGrad.addColorStop(0, 'rgba(14, 8, 32, 0.97)');
+            hudGrad.addColorStop(1, 'rgba(8, 5, 20, 0.99)');
             CTX.fillStyle = hudGrad;
-            CTX.fillRect(0, y, CANVAS.width, 50);
-            // 上邊分隔線
-            CTX.strokeStyle = 'rgba(255, 180, 60, 0.6)';
+            CTX.fillRect(0, 0, CANVAS.width, 44);
+            
+            // 分隔線
+            CTX.strokeStyle = 'rgba(255, 160, 40, 0.6)';
             CTX.lineWidth = 1;
             CTX.beginPath();
-            CTX.moveTo(0, y); CTX.lineTo(CANVAS.width, y);
+            CTX.moveTo(0, 44);
+            CTX.lineTo(CANVAS.width, 44);
             CTX.stroke();
-
-            const midX = CANVAS.width / 2;
-
-            // 左區：分數 (x=8, 左對齐)
+            
+            // ── 左側：關卡 + 分數 ──
+            const level = LEVELS[gameState.currentLevel];
+            const totalLevels = LEVELS.length;
+            
+            // 關卡文字（左上）
             CTX.textAlign = 'left';
-            CTX.fillStyle = '#FF8C2A';
-            CTX.font = 'bold 13px Noto Sans TC';
-            CTX.fillText(`分數`, 8, y + 16);
+            CTX.fillStyle = 'rgba(255, 200, 100, 0.85)';
+            CTX.font = 'bold 10px Noto Sans TC, sans-serif';
+            CTX.fillText('第 ' + (gameState.currentLevel + 1) + '/' + totalLevels + ' 關', 8, 14);
+            
+            // 分數標籤（左下）
+            CTX.fillStyle = 'rgba(255, 180, 80, 0.7)';
+            CTX.font = 'bold 10px Noto Sans TC, sans-serif';
+            CTX.fillText('分數', 8, 28);
+            
+            // 分數數值（左下，大字）
             CTX.fillStyle = '#fff';
-            CTX.font = 'bold 15px Noto Sans TC';
-            CTX.fillText(`${gameState.score}`, 8, y + 36);
-
-            // 中區：COMBO (x=midX, 置中)
+            CTX.font = 'bold 14px Noto Sans TC, sans-serif';
+            CTX.fillText(gameState.score, 8, 40);
+            
+            // ── 中央：時間標籤 + 時間數字 + 進度條 ──
+            const cx = CANVAS.width / 2;
+            
+            // 時間標籤（中央上方）
+            CTX.textAlign = 'center';
+            CTX.fillStyle = 'rgba(255, 200, 100, 0.85)';
+            CTX.font = 'bold 10px Noto Sans TC, sans-serif';
+            CTX.fillText('時間', cx, 12);
+            
+            // 時間數字（中央，大）
+            const timeVal = Math.ceil(Math.max(0, gameState.time));
+            CTX.fillStyle = gameState.time <= 10 ? '#FF5555' : (gameState.time <= 20 ? '#FFD700' : '#fff');
+            CTX.font = 'bold 17px Noto Sans TC, sans-serif';
+            CTX.fillText(timeVal + 's', cx, 30);
+            
+            // 進度條背景
+            const barW = 110, barH = 5;
+            const barX = Math.round(cx - barW / 2);
+            const barY = 37;
+            const timeFrac = Math.max(0, Math.min(1, gameState.time / level.time));
+            
+            CTX.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            CTX.beginPath();
+            if (CTX.roundRect) {
+                CTX.roundRect(barX, barY, barW, barH, 2);
+            } else {
+                CTX.rect(barX, barY, barW, barH);
+            }
+            CTX.fill();
+            
+            // 進度條（顏色變化）
+            const barColor = gameState.time <= 10 ? '#FF4444' : (gameState.time <= 20 ? '#FFD700' : '#2ECC71');
+            CTX.fillStyle = barColor;
+            CTX.beginPath();
+            if (CTX.roundRect) {
+                CTX.roundRect(barX, barY, Math.max(3, barW * timeFrac), barH, 2);
+            } else {
+                CTX.rect(barX, barY, Math.max(3, barW * timeFrac), barH);
+            }
+            CTX.fill();
+            
+            // ── COMBO 提示（中央上方，時間標籤位置） ──
             if (gameState.combo > 1) {
                 CTX.textAlign = 'center';
-                const comboAlpha = Math.min(1, (Date.now() - gameState.lastComboTime) < 1500 ? 1 : 0);
-                CTX.globalAlpha = comboAlpha;
                 CTX.fillStyle = '#FFD700';
-                CTX.font = 'bold 13px Noto Sans TC';
-                CTX.fillText(`COMBO ×${gameState.combo}!`, midX, y + 16);
-                CTX.globalAlpha = 1;
+                CTX.font = 'bold 9px Noto Sans TC, sans-serif';
+                CTX.fillText('COMBO ×' + gameState.combo + '!', cx, 23);
             }
-
-            // 右區：時間 (x=412, 右對齐)
-            CTX.textAlign = 'right';
-            CTX.fillStyle = '#FF8C2A';
-            CTX.font = 'bold 13px Noto Sans TC';
-            CTX.fillText(`時間`, 412, y + 16);
-            CTX.fillStyle = gameState.time <= 10 ? '#FF4444' : '#fff';
-            CTX.font = 'bold 15px Noto Sans TC';
-            CTX.fillText(`${Math.ceil(gameState.time)}s`, 412, y + 36);
-
-            const level = LEVELS[gameState.currentLevel];
-            if (level.type === 'llk') {
+            
+            // ── Hint & Shuffle 按鈕（LLK 專用，移至 HUD 下方調整區） ──
+            const llk_level = LEVELS[gameState.currentLevel];
+            if (llk_level.type === 'llk') {
                 // 💡 提示按鈕
                 const hintOk = gameState.hint.available > 0;
-                const hx = midX - 102, hy = y + 6, hw = 88, hh = 34;
+                const midX = CANVAS.width / 2;
+                const hx = midX - 102, hy = 50, hw = 88, hh = 34;
                 const hg = CTX.createLinearGradient(hx, hy, hx, hy + hh);
                 if (hintOk) {
                     hg.addColorStop(0, 'rgba(255,215,0,0.30)');
@@ -1182,18 +1228,30 @@
                     hg.addColorStop(1, 'rgba(40,40,60,0.40)');
                 }
                 CTX.fillStyle = hg;
-                CTX.beginPath(); CTX.roundRect(hx, hy, hw, hh, 8); CTX.fill();
+                CTX.beginPath();
+                if (CTX.roundRect) {
+                    CTX.roundRect(hx, hy, hw, hh, 8);
+                } else {
+                    CTX.rect(hx, hy, hw, hh);
+                }
+                CTX.fill();
                 CTX.strokeStyle = hintOk ? 'rgba(255,215,0,0.7)' : 'rgba(80,80,100,0.5)';
                 CTX.lineWidth = 1.5;
-                CTX.beginPath(); CTX.roundRect(hx, hy, hw, hh, 8); CTX.stroke();
+                CTX.beginPath();
+                if (CTX.roundRect) {
+                    CTX.roundRect(hx, hy, hw, hh, 8);
+                } else {
+                    CTX.rect(hx, hy, hw, hh);
+                }
+                CTX.stroke();
                 CTX.fillStyle = hintOk ? '#FFD700' : '#666';
                 CTX.font = 'bold 14px Noto Sans TC';
                 CTX.textAlign = 'center';
-                CTX.fillText(`💡 ×${gameState.hint.available}`, hx + hw/2, hy + 22);
+                CTX.fillText('💡 ×' + gameState.hint.available, hx + hw/2, hy + 22);
 
                 // 🔄 洗牌按鈕
                 const shuffleOk = gameState.shuffle.available > 0;
-                const sx = midX + 14, sy = y + 6, sw = 88, sh2 = 34;
+                const sx = midX + 14, sy = 50, sw = 88, sh2 = 34;
                 const sg2 = CTX.createLinearGradient(sx, sy, sx, sy + sh2);
                 if (shuffleOk) {
                     sg2.addColorStop(0, 'rgba(255,215,0,0.30)');
@@ -1203,12 +1261,26 @@
                     sg2.addColorStop(1, 'rgba(40,40,60,0.40)');
                 }
                 CTX.fillStyle = sg2;
-                CTX.beginPath(); CTX.roundRect(sx, sy, sw, sh2, 8); CTX.fill();
+                CTX.beginPath();
+                if (CTX.roundRect) {
+                    CTX.roundRect(sx, sy, sw, sh2, 8);
+                } else {
+                    CTX.rect(sx, sy, sw, sh2);
+                }
+                CTX.fill();
                 CTX.strokeStyle = shuffleOk ? 'rgba(255,215,0,0.7)' : 'rgba(80,80,100,0.5)';
                 CTX.lineWidth = 1.5;
-                CTX.beginPath(); CTX.roundRect(sx, sy, sw, sh2, 8); CTX.stroke();
+                CTX.beginPath();
+                if (CTX.roundRect) {
+                    CTX.roundRect(sx, sy, sw, sh2, 8);
+                } else {
+                    CTX.rect(sx, sy, sw, sh2);
+                }
+                CTX.stroke();
                 CTX.fillStyle = shuffleOk ? '#FFD700' : '#666';
-                CTX.fillText(`🔄 ×${gameState.shuffle.available}`, sx + sw/2, sy + 22);
+                CTX.font = 'bold 14px Noto Sans TC';
+                CTX.textAlign = 'center';
+                CTX.fillText('🔄 ×' + gameState.shuffle.available, sx + sw/2, sy + 22);
             }
         }
 
@@ -1379,12 +1451,10 @@
                 gameState.time -= dt;
                 if (gameState.time <= 0) {
                     gameState.time = 0;
-                    const level = LEVELS[gameState.currentLevel];
-                    if (level.type === 'llk' && gameState.currentLevel >= 2) {
-                        gameState.state = 'gameover';
-                    } else {
-                        gameState.state = 'lvlclear';
-                    }
+                    gameState.state = 'gameover';  // 時間到直接進入 gameover
+                    // 直接進入排行榜，不顯示分數畫面
+                    namePhase = "postgame";
+                    showNameOverlay();
                 }
 
                 if (Date.now() - gameState.lastComboTime > 3000) {
@@ -1393,6 +1463,13 @@
             }
 
             if (gameState.state === 'lvlclear') {
+                // 剩餘時間轉換為分數：1秒 = 10分
+                var timeBonus = Math.floor(gameState.time) * 10;
+                // 未用完道具各 +100 分
+                var hintBonus = gameState.hint.available * 100;
+                var shuffleBonus = gameState.shuffle.available * 100;
+                gameState.score += timeBonus + hintBonus + shuffleBonus;
+                gameState.time = 0;  // 清除剩餘時間
                 gameState.state = 'videoplay';
                 showClearVideo(() => {
                     if (gameState.currentLevel < LEVELS.length - 1) {
@@ -1415,8 +1492,8 @@
             const video = document.getElementById('clearVideo');
             overlay.style.display = 'flex';
             video.currentTime = 0;
-            video.muted = isMuted;
-            video.play().catch(() => {});
+            video.muted = true;  // 確保 autoplay 不被瀏覽器阻擋
+            video.play().catch(() => { onEnd(); });
             const handler = () => {
                 overlay.style.display = 'none';
                 video.removeEventListener('ended', handler);
@@ -1446,9 +1523,11 @@ function showNameOverlay() {
             } else {
                 // 遊戲完成後提交排行榜
                 document.getElementById('finalScore').textContent = `最終分數: ${gameState.score}`;
-                document.querySelector('.g-overlay-title').textContent = '恭喜通關！';
+                document.querySelector('.g-overlay-title').textContent = '遊戲結束！';
                 document.getElementById('submitBtn').textContent = '提交排行榜';
-                document.getElementById('playerNameInput').value = '';
+                // 預填上次使用的名字，讓玩家不必重輸
+                const savedName = localStorage.getItem('platform_player_name') || '';
+                document.getElementById('playerNameInput').value = savedName;
             }
             document.getElementById('nameOverlay').classList.add('active');
             document.getElementById('playerNameInput').focus();
@@ -1489,12 +1568,13 @@ function showNameOverlay() {
             }
         }
 
+        let isSubmitting = false;  // 防止重複提交
+
         async function submitScore(name) {
-            if (!name.trim()) return;
-            
             // pregame 階段：輸入名字開始遊戲
             if (namePhase === "pregame") {
-                localStorage.setItem('platform_player_name', name.trim());
+                const finalName = name.trim() || '匿名';
+                localStorage.setItem('platform_player_name', finalName);
                 hideOverlay();
                 namePhase = "postgame";
                 initLevel(0);  // 開始遊戲
@@ -1502,23 +1582,44 @@ function showNameOverlay() {
             }
             
             // postgame 階段：提交排行榜
+            if (isSubmitting) return;  // 防止重複點擊
+            const finalName = name.trim() || '匿名';
+            
+            isSubmitting = true;
+            const btn = document.getElementById('submitBtn');
+            btn.textContent = '提交中...';
+            btn.disabled = true;
+
+            // 儲存名字供下次使用
+            localStorage.setItem('platform_player_name', finalName);
+
             try {
                 const response = await fetch(`${FB_URL}/${FB_PATH}.json`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        name: name.trim(),
+                        name: finalName,
                         score: gameState.score,
                         date: new Date().toISOString()
                     })
                 });
-                if (response.ok) {
-                    gameState.state = 'leaderboard';
-                    hideOverlay();
-                    showLeaderboard();
+                // 無論成功或失敗，都進入排行榜畫面，不卡在 overlay
+                gameState.state = 'leaderboard';
+                hideOverlay();
+                showLeaderboard();
+                if (!response.ok) {
+                    console.warn('提交分數回傳非 200，仍顯示排行榜');
                 }
             } catch (err) {
                 console.error('提交分數失敗', err);
+                // 網路錯誤時也要放行，不卡住
+                gameState.state = 'leaderboard';
+                hideOverlay();
+                showLeaderboard();
+            } finally {
+                isSubmitting = false;
+                btn.textContent = '提交排行榜';
+                btn.disabled = false;
             }
         }
 
@@ -1538,6 +1639,10 @@ function showNameOverlay() {
         CANVAS.addEventListener('click', (e) => {
             if (gameState.state === 'title') {
                 namePhase = "pregame";
+                showNameOverlay();
+            } else if (gameState.state === 'gameover') {
+                // 遊戲結束 → 允許上榜
+                namePhase = "postgame";
                 showNameOverlay();
             } else {
                 handleCanvasClick(e);
@@ -1573,6 +1678,27 @@ function showNameOverlay() {
             }
         });
 
+        // 排行榜頁面的分享按鈕
+        if (document.getElementById('lbShareBtn')) {
+            document.getElementById('lbShareBtn').addEventListener('click', () => {
+                const name = document.getElementById('playerNameInput')?.value?.trim() || '匿名玩家';
+                const score = gameState.score;
+                const shareText = `🎯 ${name} 在動物連連看拿到 ${score} 分！\n🏆 來路否羅挑戰我吧！\nhttps://zoo-forest-can.github.io/island/`;
+                if (navigator.share) {
+                    navigator.share({ title: '動物連連看', text: shareText }).catch(() => {});
+                } else {
+                    navigator.clipboard.writeText(shareText).then(() => alert('成績已複製！')).catch(() => alert(shareText));
+                }
+            });
+        }
+        // 再玩一次按鈕（回到第一關重新開始）
+        if (document.getElementById('playAgainBtn')) {
+            document.getElementById('playAgainBtn').addEventListener('click', () => {
+                hideOverlay();
+                namePhase = "pregame";
+                showNameOverlay();
+            });
+        }
         document.getElementById('restartBtn').addEventListener('click', () => {
             hideOverlay();
             gameState.state = 'title';
